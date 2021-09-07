@@ -146,12 +146,7 @@ class PasswordItemViewController extends Component {
         this.props.changeParentsActiveView(ViewType.passwordListView);
     }
     //
-    generatePassword = () => {
-        let length = 10
-        let specialCharacters = true
-        let numbers = true
-        let lowerCase = true
-        let upperCase = true
+    generatePassword = (length, specialCharacters, numbers, lowerCase, upperCase) => {
         this.props.ws.send(JSON.stringify({
             channel: "password:generate",
             length: length,
