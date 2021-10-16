@@ -18,7 +18,7 @@ class LocalRegistrationView extends LocalRegistrationViewController {
     render() {
         return (
             <>
-                <Header hStyle="back" buttonText="< Back"
+                <Header hStyle="back" buttonText="Back"
                         buttonFunc={() => this.changeParentsActiveView(ViewType.defaultLoginView)}/>
                 <form id="submit-form">
                     <div className="container">

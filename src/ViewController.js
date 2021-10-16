@@ -55,6 +55,10 @@ class LocalRegistrationViewController extends Component {
         }
     }
     //
+    changeParentsActiveView = (newActiveView) => {
+        this.props.changeParentsActiveView(newActiveView);
+    }
+    //
     submitRegistration = (password, location) => {
         this.props.ws.send(JSON.stringify({
             channel: "localLogin:registerResponse",
@@ -73,10 +77,6 @@ class LocalRegistrationViewController extends Component {
                 }
             }
         }
-    }
-    //
-    changeParentsActiveView = (newActiveView) => {
-        this.props.changeParentsActiveView(newActiveView);
     }
 }
 
@@ -99,12 +99,13 @@ class DefaultLoginViewController extends Component {
         }
     }
     //
-    submitSubmitLogin = (userServer, userEmail, userPassword) => {
+    submitSubmitLogin = (userServer, userEmail, userPassword, saveEmail) => {
         this.props.ws.send(JSON.stringify({
             channel: "remoteLogin:login",
             server: userServer,
             email: userEmail,
-            password: userPassword
+            password: userPassword,
+            saveEmail: saveEmail
         }));
         // receiver
         let that = this
@@ -120,6 +121,23 @@ class DefaultLoginViewController extends Component {
     //
     popAndChangeView = (destinationView) => {
         this.props.changeParentsActiveView(destinationView);
+    }
+    //
+    getEmail = () => {
+        this.props.ws.send(JSON.stringify({
+            channel: "email:get"
+        }));
+        // receiver
+        let that = this
+        this.props.ws.onmessage = function (evt) {
+            const result = JSON.parse(evt.data)
+            if (result.channel === "email:response") {
+                if (result.email !== "") {
+                    that.setState({email: result.email})
+                    that.setState({saveEmail: true})
+                }
+            }
+        }
     }
 }
 
@@ -138,8 +156,6 @@ class PasswordItemViewController extends Component {
                 resolve(password)
             }
         });
-
-
     }
     //
     popView = () => {

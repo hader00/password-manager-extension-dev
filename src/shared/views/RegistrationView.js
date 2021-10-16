@@ -1,43 +1,35 @@
 import React from 'react';
-import Field from "../components/Field";
 import HiddenField from "../components/HiddenField";
 import ViewType from "../other/ViewType";
 import Header from "../components/Header";
 import PropTypes from "prop-types";
 import {RegistrationViewController} from "../../ViewController";
+import {Button, FormControl, TextField} from "@material-ui/core";
+import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 
 class RegistrationView extends RegistrationViewController {
     render() {
         return (
-            <>
-                <Header hStyle="back" buttonText="< Back"
+            <FormControl style={{display: "flex"}} onSubmit={this.submitRegistration}>
+                <Header hStyle="back" buttonText="Back"
+                        icon={<ArrowBackIosIcon/>}
                         buttonFunc={() => this.handleViewChange(ViewType.defaultLoginView)}/>
-                <form id="submit-form" onSubmit={this.submitRegistration}>
-                    <div className="container">
-                        <Field text={"First Name"} type={"text"} placeholder={"Enter First Name"}
-                               name={"user-first-name"} id={"user-first-name"}/>
-                        <Field text={"Last Name"} type={"text"} placeholder={"Enter Last Name"} name={"user-last-name"}
-                               id={"user-last-name"}/>
-                        <Field text={"Email"} type={"email"} placeholder={"Enter Email"} name={"user-email"}
-                               id={"user-email"}/>
-                        <Field text={"Password"} type={"password"} placeholder={"Enter Password"} name={"user-password"}
-                               id={"user-password"}/>
-                        <Field text={"Confirm Password"} type={"password"} placeholder={"Confirm Password"}
-                               name={"user-confirm-password"} id={"user-confirm-password"}/>
-                        <HiddenField
-                            text={"Custom Server"} type={"text"} placeholder={"Enter Server"} name={"user-server"}
-                            id={"user-server"}
-                            helpDescription={"For enterprise login"}/>
-
-                        <button id="submit-button" type="submit">Register</button>
-                    </div>
-                    <div className="container">
-                        <button type="button" className="cancel-btn"
-                                onClick={() => this.handleViewChange(ViewType.defaultLoginView)}>Cancel
-                        </button>
-                    </div>
-                </form>
-            </>
+                <TextField text={"First Name"} type={"text"} placeholder={"Enter First Name"}
+                           name={"user-first-name"} id={"user-first-name"}/>
+                <TextField text={"Last Name"} type={"text"} placeholder={"Enter Last Name"} name={"user-last-name"}
+                           id={"user-last-name"}/>
+                <TextField text={"Email"} type={"email"} placeholder={"Enter Email"} name={"user-email"}
+                           id={"user-email"}/>
+                <TextField text={"Password"} type={"password"} placeholder={"Enter Password"} name={"user-password"}
+                           id={"user-password"}/>
+                <TextField text={"Confirm Password"} type={"password"} placeholder={"Confirm Password"}
+                           name={"user-confirm-password"} id={"user-confirm-password"}/>
+                <HiddenField
+                    text={"Custom Server"} type={"text"} placeholder={"Enter Server"} name={"user-server"}
+                    id={"user-server"}
+                    helpDescription={"For enterprise login"}/>
+                <Button color="primary" variant="contained" type="submit" onClick={this.submitRegistration}>Register</Button>
+            </FormControl>
         );
     }
 

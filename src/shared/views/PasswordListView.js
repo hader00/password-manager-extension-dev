@@ -4,6 +4,7 @@ import PasswordItem from "../components/PasswordItem";
 import PropTypes from "prop-types";
 import {PasswordListViewController} from "../../ViewController";
 import ViewType from "../other/ViewType";
+import {Add} from "@material-ui/icons";
 
 export class PasswordListView extends PasswordListViewController {
 
@@ -16,16 +17,7 @@ export class PasswordListView extends PasswordListViewController {
             activePasswordID: 0,
             inputReadOnly: false,
             addingNewItem: false,
-            passwords: [
-                {
-                    Id: 1,
-                    Title: "FB",
-                    Description: "My login for FB Account",
-                    Url: "www.facebook.com",
-                    Username: "id@ikd.com",
-                    Password: "FBpasswordLOLik123$$$$",
-                },
-            ],
+            passwords: [],
             filteredPasswords: [],
         }
     }
@@ -59,7 +51,7 @@ export class PasswordListView extends PasswordListViewController {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
             this.props.setPasswordItem(
                 {
-                    password: this.state.passwords.length >= 1 ? this.state.passwords.filter(pass => pass.Id === this.state.activePasswordID)[0] : [],
+                    password: this.state.passwords.length >= 1 ? this.state.passwords.filter(pass => pass.id === this.state.activePasswordID)[0] : [],
                     parentPasswordView: this.handlePasswordView,
                     inputReadOnly: this.state.inputReadOnly,
                     addingNewItem: this.state.addingNewItem
@@ -69,9 +61,16 @@ export class PasswordListView extends PasswordListViewController {
         } else {
             return (
                 <div className="container">
-                    <Header buttonText="+" hStyle="input" buttonFunc={() => {
-                        this.setState({addingNewItem: true})
-                    }} onChange={(e) => this.searchItems(e.target.value)}/>
+                    <Header buttonText="Add" hStyle="input"
+                            searchValue={this.state.searchInput}
+                            icon={<Add/>}
+                            buttonFunc={() => {
+                                this.setState({addingNewItem: true})
+                            }}
+                            onChange={(e) => this.searchItems(e.target.value)}
+                            clearInput={() => {
+                                this.setState({searchInput: ""})
+                            }}/>
                     <div>
                         <p id="no-items"> {(this.state.passwords.size === 0) ? "No Passwords" : ""}</p>
                         <div id="passwords">
@@ -79,7 +78,7 @@ export class PasswordListView extends PasswordListViewController {
                                 this.state.filteredPasswords.map((password) => {
                                     return (
                                         <PasswordItem
-                                            key={password.Id}
+                                            key={password.id}
                                             password={password}
                                             parentPasswordView={this.handlePasswordView}
                                         />
@@ -90,7 +89,7 @@ export class PasswordListView extends PasswordListViewController {
                                     this.state.passwords.map((password) => {
                                         return (
                                             <PasswordItem
-                                                key={password.Id}
+                                                key={password.id}
                                                 password={password}
                                                 parentPasswordView={this.handlePasswordView}
                                             />

@@ -1,19 +1,30 @@
-// If your extension doesn't need a content script, just leave this file empty
+/*global chrome*/
 
-// This is an example of a script that will run on every page. This can alter pages
-// Don't forget to change `matches` in manifest.json if you want to only change specific webpages
-printAllPageLinks();
+export async function getActiveTabURL() {
+  return new Promise((resolve, reject) => {
+    chrome.tabs.getSelected(null, function(tab) {
+          resolve(tab.url)
+        });
+  });
+}
 
-// This needs to be an export due to typescript implementation limitation of needing '--isolatedModules' tsconfig
-export function printAllPageLinks() {
-  const allLinks = Array.from(document.querySelectorAll('a')).map(
-    link => link.href
-  );
+export function fillCredentials(url, username, password) {
+  chrome.tabs.getSelected(null, function(tab) {
+    if (url === tab.url) {
+      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="username"]' ).value = '${username}'`});
+      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="password"]' ).value = '${password}'`});
+    }
+    chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="username"]' ).value = '${username}'`});
+    chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="email"]' ).value = '${username}'`});
+    chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="pass"]' ).value = '${password}'`});
+    chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="password"]' ).value = '${password}'`});
+  });
+}
 
-  console.log('-'.repeat(30));
-  console.log(
-    `These are all ${allLinks.length} links on the current page that have been printed by the Sample Create React Extension`
-  );
-  console.log(allLinks);
-  console.log('-'.repeat(30));
+export function inject() {
+  chrome.tabs.getSelected(null, function(tab) {
+    let tabUrl = tab.url;
+    chrome.tabs.executeScript(null,{code:"document.querySelector( 'input[name=\"username\"]' ).value = 'testUser'"});
+
+  });
 }

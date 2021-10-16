@@ -8,8 +8,11 @@ import LocalRegistrationView from "./shared/views/LocalRegistrationView";
 import RegistrationView from "./shared/views/RegistrationView";
 import PasswordsListView from "./shared/views/PasswordListView";
 import PasswordItemView from "./shared/views/PasswordItemView";
+import {fillCredentials} from "./contentScript";
+import {Button} from "@material-ui/core";
+import {PasswordItemViewController} from "./ViewController";
 
-class App extends Component {
+class App extends PasswordItemViewController {
     timeout = 250; // Initial timeout duration as a class variable
     ws;
 
@@ -17,6 +20,7 @@ class App extends Component {
         super(props);
         this.ws = this.connect();
         this.state = {
+            password: "",
             ws: this.ws,
             activeView: null,
             passwordItem: {},
@@ -43,14 +47,21 @@ class App extends Component {
                                        changeParentsActiveView={this.changeActiveView}
                                        setPasswordItem={this.setPasswordItem}
                                        ws={this.ws}/>
-                    <PasswordItemView
-                        componentName={ViewType.passwordItem}
+                    <div
+                        componentName={ViewType.passwordItem}>
+                        <PasswordItemView
                         changeParentsActiveView={this.changeActiveView}
                         password={this.state.passwordItem.password}
                         inputReadOnly={this.state.passwordItem.inputReadOnly}
                         addingNewItem={this.state.passwordItem.addingNewItem}
-                        ws={this.ws}
-                    />
+                            ws={this.ws}
+                        onChangePassword={this.onChangePassword}
+                        />
+                        <Button variant="primary" onClick={async (e) => {
+                            e.preventDefault();
+                            fillCredentials(this.state.passwordItem.password.password.url, this.state.passwordItem.password.username, this.state.password)
+                        }}>Fill</Button>
+                    </div>
                 </SwitchComponents>
             </div>
         );
@@ -70,29 +81,23 @@ class App extends Component {
 
     connect = () => {
         let ws = new WebSocket("ws://localhost:3002/");
-        let that = this; // cache the this
+        let that = this;
         let connectInterval;
 
-        // websocket onopen event listener
         ws.onopen = () => {
             console.log("connected websocket main component");
-            that.timeout = 250; // reset timer to 250 on open of websocket connection
-            clearTimeout(connectInterval); // clear Interval on on open of websocket connection
+            that.timeout = 250;
+            clearTimeout(connectInterval);
             this.getActiveView();
         };
 
-        // websocket onclose event listener
         ws.onclose = e => {
             console.log(
-                `Socket is closed. Reconnect will be attempted in ${Math.min(
-                    10000 / 1000,
-                    (that.timeout + that.timeout) / 1000
-                )} second.`,
-                e.reason
+                'Socket is closed.'
             );
-
-            that.timeout = that.timeout + that.timeout; //increment retry interval
-            connectInterval = setTimeout(this.check, Math.min(10000, that.timeout)); //call check function after timeout
+            // retry
+            that.timeout = that.timeout + that.timeout;
+            connectInterval = setTimeout(this.check, Math.min(10000, that.timeout));
         };
 
 
@@ -129,6 +134,9 @@ class App extends Component {
     }
     getActiveView = () => {
         this.state.ws.send(JSON.stringify({channel:"defaultView:get"}));
+    }
+    onChangePassword = (newValue) => {
+        this.setState({password: newValue})
     }
 }
 
