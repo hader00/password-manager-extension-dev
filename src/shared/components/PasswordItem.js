@@ -15,24 +15,40 @@ export class PasswordItem extends Component {
 
     render() {
         return (
-            <Box style={{paddingTop: "5px"}}>
-                <Grid container style={{display: "flex"}}>
-                    <Grid item xs style={{display: "flex"}}>
-                        <ImageWithDefault default={appLogo} src={this.state.url}
-                                          style={{paddingTop: "5px", width: "30px", height: "30px", display: "flex"}}/>
+            <>
+                <Box style={{paddingTop: "10px", paddingBottom: "10px", height: "60px", alignItems: "center"}}>
+                    <Grid container style={{display: "flex", marginBottom: "10px", marginTop: "10px"}}>
+                        <Grid item xs style={{display: "flex"}}>
+                            <ImageWithDefault default={appLogo} src={this.state.url}
+                                              style={{
+                                                  paddingTop: "5px",
+                                                  width: "30px",
+                                                  height: "30px",
+                                                  display: "flex"
+                                              }}/>
+                        </Grid>
+                        <Grid item xs={10} style={{lineHeight: "0.1", marginTop: "-1vh"}}>
+                            <p><b>{this.props.password.title}</b></p>
+                            <p>{this.props.password.username}</p>
+                        </Grid>
+                        <Grid item xs
+                              style={{position: "absolute", right: "10px", marginTop: "-10px", paddingRight: "10px"}}>
+                            <Button style={{
+                                display: "block",
+                                width: "10px",
+                                height: "30px",
+                                backgroundColor: "#007fff",
+                                marginBottom: "2px"
+                            }} size="small" variant="contained" color="primary"
+                                    onClick={this.openPasswordEdit}>Edit</Button>
+                            <Button style={{display: "block", width: "10px", height: "30px", backgroundColor: "green"}}
+                                    size="small" variant="contained" color="secondary"
+                                    onClick={this.openPasswordView}>View</Button>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={9} style={{lineHeight: "0.1", marginTop: "-1vh"}}>
-                        <p><b>{this.props.password.title}</b></p>
-                        <p>{this.props.password.username}</p>
-                    </Grid>
-                    <Grid item xs style={{position: "absolute", right: "10px"}}>
-                        <Button variant="contained" color="primary" style={{marginRight: "5px"}}
-                                onClick={this.openPasswordEdit}>Edit</Button>
-                        <Button variant="contained" color="secondary" onClick={this.openPasswordView}>View</Button>
-                    </Grid>
-                </Grid>
+                </Box>
                 <Divider variant="fullWidth"/>
-            </Box>
+            </>
         )
     };
 
@@ -45,12 +61,14 @@ export class PasswordItem extends Component {
     }
 
     checkURL = () => {
-        let url = this.state.url
-        if (!this.state.url.startsWith('http')) {
-            url = "https://".concat(url)
+        if (this.state.url !== "") {
+            let url = this.state.url
+            if (!this.state.url?.startsWith('http')) {
+                url = "https://".concat(url)
+            }
+            url = url.concat("/favicon.ico")
+            this.setState({url: url})
         }
-        url = url.concat("/favicon.ico")
-        this.setState({url: url})
     }
 
     componentDidMount() {

@@ -1,5 +1,4 @@
 import './shared/App.css';
-import {Component} from "react";
 import ViewType from "./shared/other/ViewType";
 import DefaultLoginView from "./shared/views/DefaultLoginView";
 import SwitchComponents from "./shared/components/SwitchComponent";
@@ -23,7 +22,12 @@ class App extends PasswordItemViewController {
             password: "",
             ws: this.ws,
             activeView: null,
+            passwords: [],
+            filteredPasswords: [],
             passwordItem: {},
+            decryptedPassword: "",
+            defaultView: null,
+            timeout: null,
         };
     }
 
@@ -46,21 +50,31 @@ class App extends PasswordItemViewController {
                     <PasswordsListView componentName={ViewType.passwordListView}
                                        changeParentsActiveView={this.changeActiveView}
                                        setPasswordItem={this.setPasswordItem}
+                                       passwords={this.state.passwords}
+                                       filteredPasswords={this.state.filteredPasswords}
+                                       setFilteredPasswords={this.setFilteredPasswords}
+                                       fetchAllPasswords={this.fetchAllPasswords}
+                                       timeout={this.state.timeout}
                                        ws={this.ws}/>
                     <div
                         componentName={ViewType.passwordItem}>
                         <PasswordItemView
                         changeParentsActiveView={this.changeActiveView}
+                        setPasswordForFill={this.setPasswordForFill}
                         password={this.state.passwordItem.password}
                         inputReadOnly={this.state.passwordItem.inputReadOnly}
                         addingNewItem={this.state.passwordItem.addingNewItem}
                             ws={this.ws}
-                        onChangePassword={this.onChangePassword}
                         />
-                        <Button variant="primary" onClick={async (e) => {
-                            e.preventDefault();
-                            fillCredentials(this.state.passwordItem.password.password.url, this.state.passwordItem.password.username, this.state.password)
-                        }}>Fill</Button>
+                        {!this.state.passwordItem.addingNewItem ?
+                            <Button fullWidth style={{backgroundColor: "green"}} color="primary"
+                                    variant="contained" onClick={async (e) => {
+                                e.preventDefault();
+                                fillCredentials(this.state.passwordItem.password.password.url, this.state.passwordItem.password.username, this.state.decryptedPassword)
+                            }}>Fill Credentials</Button>
+                            :
+                            <></>
+                        }
                     </div>
                 </SwitchComponents>
             </div>
@@ -79,6 +93,10 @@ class App extends PasswordItemViewController {
         this.setState({passwordItem: newPasswordItem});
     }
 
+    setPasswordForFill = (password) => {
+        this.setState({decryptedPassword: password})
+    }
+
     connect = () => {
         let ws = new WebSocket("ws://localhost:3002/");
         let that = this;
@@ -91,7 +109,7 @@ class App extends PasswordItemViewController {
             this.getActiveView();
         };
 
-        ws.onclose = e => {
+        ws.onclose = () => {
             console.log(
                 'Socket is closed.'
             );
@@ -129,14 +147,46 @@ class App extends PasswordItemViewController {
 
     setStateFromResponse = (response) => {
         if (response.channel === "defaultView:response") {
-            this.setState({activeView: response.defaultView});
+            this.setState({activeView: response.defaultView, timeout: response.timeout});
         }
     }
     getActiveView = () => {
         this.state.ws.send(JSON.stringify({channel:"defaultView:get"}));
     }
+
     onChangePassword = (newValue) => {
         this.setState({password: newValue})
+    }
+
+    fetchAllPasswords = () => {
+        let that = this;
+        this.ws.send(JSON.stringify({channel: "passwords:fetch"}));
+        console.log("Fetching all passwords");
+        // receiver
+        this.ws.onmessage = function (evt) {
+            const result = JSON.parse(evt.data)
+            if (result.channel === "passwords:fetchResponse") {
+                that.setState({passwords: result.response});
+            }
+        }
+    }
+
+    getExtensionLoginState = () => {
+        let that = this;
+        this.ws.send(JSON.stringify({channel: "login:get"}));
+        // receiver
+        this.ws.onmessage = function (evt) {
+            const result = JSON.parse(evt.data)
+            if (result.channel === "login:response") {
+                if (result.response === true) {
+                    that.setState({activeView: ViewType.passwordListView});
+                }
+            }
+        }
+    }
+
+    setFilteredPasswords = (value) => {
+        this.setState({filteredPasswords: value});
     }
 }
 

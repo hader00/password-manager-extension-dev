@@ -139,6 +139,23 @@ class DefaultLoginViewController extends Component {
             }
         }
     }
+    //
+    getEmail = () => {
+        this.props.ws.send(JSON.stringify({
+            channel: "email:get"
+        }));
+        // receiver
+        let that = this
+        this.props.ws.onmessage = function (evt) {
+            const result = JSON.parse(evt.data)
+            if (result.channel === "email:response") {
+                if (result.email !== "") {
+                    that.setState({email: result.email})
+                    that.setState({saveEmail: true})
+                }
+            }
+        }
+    }
 }
 
 
@@ -146,7 +163,7 @@ class PasswordItemViewController extends Component {
     decryptPassword = async (encryptedPassword) => {
         this.props.ws.send(JSON.stringify({channel: "password:decrypt", password: encryptedPassword}));
         // receiver
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             let password = ""
             this.props.ws.onmessage = function (evt) {
                 const result = JSON.parse(evt.data)
@@ -157,48 +174,40 @@ class PasswordItemViewController extends Component {
             }
         });
     }
+    decryptPasswordSync = (encryptedPassword) => {
+        this.props.ws.send(JSON.stringify({channel: "password:decrypt", password: encryptedPassword}));
+        // receiver
+        this.props.ws.onmessage = function (evt) {
+            const result = JSON.parse(evt.data)
+            if (result.channel === "password:decryptResponse") {
+                this.setState({decryptedPassword: result.password});
+            }
+        }
+    }
+
     //
     popView = () => {
         this.props.changeParentsActiveView(ViewType.passwordListView);
     }
     //
-    generatePassword = (length, specialCharacters, numbers, lowerCase, upperCase) => {
-        this.props.ws.send(JSON.stringify({
-            channel: "password:generate",
-            length: length,
-            specialCharacters: specialCharacters,
-            numbers: numbers,
-            lowerCase: lowerCase,
-            upperCase: upperCase
-        }));
-        // receiver
-        let that = this
-        this.props.ws.onmessage = function (evt) {
-            const result = JSON.parse(evt.data)
-            if (result.channel === "password:generateResponse") {
-                if (result.password.length > 0) {
-                    that.setState({Password: result.password})
-                } else {
-                    console.log("fail")
-                    console.log(result)
-                }
-            }
-        }
-    }
-    //
     addPassword = () => {
-        let Title = this.state.Title;
-        let Description = this.state.Description;
-        let Url = this.state.Url;
-        let Username = this.state.Username;
-        let Password = this.state.Password;
+        if (!this.state.title?.length > 0) {
+            this.toggleTitleError();
+            return;
+        }
+        let title = this.state.title;
+        let description = this.state.description;
+        let url = this.state.url;
+        let username = this.state.username;
+        let password = this.state.password;
+        this.setState({saveLoading: true});
         this.props.ws.send(JSON.stringify({
             channel: "passwords:add",
-            Title: Title,
-            Description: Description,
-            Url: Url,
-            Username: Username,
-            Password: Password
+            title: title,
+            description: description,
+            url: url,
+            username: username,
+            password: password
         }));
         // receiver
         let that = this;
@@ -217,20 +226,20 @@ class PasswordItemViewController extends Component {
     }
     //
     updatePassword = () => {
-        let Id = this.state.Id;
-        let Title = this.state.Title;
-        let Description = this.state.Description;
-        let Url = this.state.Url;
-        let Username = this.state.Username;
-        let Password = this.state.Password;
+        let id = this.state.id;
+        let title = this.state.title;
+        let description = this.state.description;
+        let url = this.state.url;
+        let username = this.state.username;
+        let password = this.state.password;
         this.props.ws.send(JSON.stringify({
             channel: "passwords:update",
-            Id: Id,
-            Title: Title,
-            Description: Description,
-            Url: Url,
-            Username: Username,
-            Password: Password
+            id: id,
+            title: title,
+            description: description,
+            url: url,
+            username: username,
+            password: password
         }));
         // receiver
         let that = this;
@@ -249,8 +258,8 @@ class PasswordItemViewController extends Component {
     }
     //
     deletePassword = () => {
-        let Id = this.state.Id;
-        this.props.ws.send(JSON.stringify({channel: "passwords:delete", Id: Id}));
+        let id = this.state.id;
+        this.props.ws.send(JSON.stringify({channel: "passwords:delete", id: id}));
         // receiver
         let that = this;
         this.props.ws.onmessage = function (evt) {
@@ -269,19 +278,7 @@ class PasswordItemViewController extends Component {
 }
 
 class PasswordListViewController extends Component {
-    fetchAllPPasswords = () => {
-        let that = this;
-        this.props.ws.send(JSON.stringify({channel: "passwords:fetch"}));
-        console.log("Fetching all passwords");
-        // receiver
-        this.props.ws.onmessage = function (evt) {
-            const result = JSON.parse(evt.data)
-            if (result.channel === "passwords:fetchResponse") {
-                that.setState({response: result.response});
-                that.setState({passwords: result.response});
-            }
-        }
-    }
+
 }
 
 class RegistrationViewController extends Component {
@@ -309,6 +306,10 @@ class RegistrationViewController extends Component {
     }
 }
 
+class PasswordFieldController extends Component {
+
+}
+
 
 export {
     LocalLoginViewController,
@@ -316,5 +317,6 @@ export {
     DefaultLoginViewController,
     PasswordItemViewController,
     PasswordListViewController,
-    RegistrationViewController
+    RegistrationViewController,
+    PasswordFieldController
 }

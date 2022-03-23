@@ -1,12 +1,14 @@
-import React, {Component} from 'react'
+import React from 'react'
 import PropTypes from "prop-types";
 import {Button, TextField} from "@material-ui/core";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
+import SettingsIcon from '@material-ui/icons/Settings';
+import {PasswordFieldController} from "../../ViewController";
 
 
-export class PasswordField extends Component {
+export class PasswordField extends PasswordFieldController {
     constructor(props) {
         super(props);
         this.state = {
@@ -17,30 +19,55 @@ export class PasswordField extends Component {
     render() {
         const props = this.props
         return (
-            <div style={{marginTop: "10px"}}>
-                <TextField value={props.value}
-                           type={this.state.type}
-                           label={props.placeholder}
-                           name={props.name} id={props.id} onChange={props.onChange}/>
+            <div style={{marginTop: "10px", display: "flex"}}>
+                <TextField
+                    inputProps={{
+                        readOnly: Boolean(props.inputReadOnly),
+                        disabled: Boolean(props.inputReadOnly),
+                    }}
+                    value={props.value || ''}
+                    style={{display: "flex", width: "70vw"}}
+                    type={this.state.type}
+                    label={props.placeholder}
+                    name={props.name} id={props.id} onChange={props.onChange}/>
                 {(this.state.type === "password") ?
                     <>
-                        <Button
-                            style={{paddingBottom: "15px", paddingTop: "15px"}}
-                            variant=""
-                            onClick={async () => {
-                                // Todo decrypt password, ask electron, save to variable, nullify on view change or on hide
-                                this.setState({type: "text"});
-                            }}>
-                            <VisibilityIcon/></Button>
-
-                        <Button
-                            style={{paddingBottom: "15px", paddingTop: "15px"}}
-                            variant=""
-                            onClick={async (e) => {
-                                e.preventDefault();
-                                await this.copy(props.value);
-                            }}>
-                            <FileCopyIcon/></Button>
+                        {props.value?.length > 0 ?
+                            <Button
+                                style={{paddingBottom: "15px", paddingTop: "15px"}}
+                                variant=""
+                                onClick={async () => {
+                                    // Todo decrypt password, ask electron, save to variable, nullify on view change or on hide
+                                    this.setState({type: "text"});
+                                }}>
+                                <VisibilityIcon/></Button>
+                            :
+                            <></>
+                        }
+                        {props.value?.length > 0 ?
+                            <Button
+                                style={{paddingBottom: "15px", paddingTop: "15px"}}
+                                variant=""
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    await this.copy(props.value);
+                                }}>
+                                <FileCopyIcon/></Button>
+                            :
+                            <></>
+                        }
+                        {(this.props.inputReadOnly === true) ?
+                            <></>
+                            :
+                            <Button
+                                style={{paddingBottom: "15px", paddingTop: "15px", boxShadow: "none"}}
+                                variant={props.showingGenerator === true ? "contained" : ""}
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    props.togglePasswordGenerator();
+                                }}>
+                                <SettingsIcon/></Button>
+                        }
                     </>
                     :
                     <>
@@ -60,15 +87,37 @@ export class PasswordField extends Component {
                                 await this.copy(props.value);
                             }}>
                             <FileCopyIcon/></Button>
+                        {(this.props.inputReadOnly === true) ?
+                            <></>
+                            :
+                            <Button
+                                style={{paddingBottom: "15px", paddingTop: "15px"}}
+                                variant=""
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    props.togglePasswordGenerator();
+                                }}>
+                                <SettingsIcon/></Button>
+                        }
                     </>
                 }
             </div>
         )
     }
 
+
     copy = async (text) => {
+        let timeout = this.getDefaultSecurity()
+        if (timeout === null) {
+            timeout = 10 * 1000; //10 seconds
+        }
         await navigator.clipboard.writeText(text);
-        // todo add visual popup
+        if (timeout !== -1) {
+            setTimeout(() => {
+                navigator.clipboard.writeText("");
+                console.log("clearing clipboard")
+            }, timeout);
+        }
     }
 
     async componentDidMount() {

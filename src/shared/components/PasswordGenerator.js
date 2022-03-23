@@ -51,11 +51,12 @@ export class PasswordGenerator extends Component {
                         label="Upper Case"
                     />
                 </FormGroup>
-                <Box style={{display: "block", paddingTop: "10px", paddingBottom: "10px"}}>
+                <Box style={{display: "block", paddingTop: "20px", paddingBottom: "10px"}}>
                     <Typography gutterBottom style={{textAlign: "left"}}>
-                        Password length
+                        Password length:
                     </Typography>
-                    <Grid container spacing={2} alignItems="center">
+                    <Grid container spacing={2} alignItems="center"
+                          style={{paddingLeft: "5px", paddingRight: "5px", marginTop: "-15px"}}>
                         <Grid item xs>
                             <Slider
                                 value={typeof this.props.generator.length === 'number' ? this.props.generator.length : 0}
