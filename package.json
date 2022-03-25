@@ -18,10 +18,8 @@
     "validator": "^13.7.0"
   },
   "scripts": {
-    "start": "set PORT=3001 && react-scripts start",
     "build": "react-scripts build && cp -R ./icons ./build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dist": "yarn build && mkdir -p ./dist && zip -r ./dist/chrome-extension.zip ./build"
   },
   "eslintConfig": {
     "extends": [
