@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "react-scripts build && cp -R ./icons ./build",
-    "dist": "yarn build && mkdir -p ./dist && zip -r ./dist/chrome-extension.zip ./build"
+    "dist": "yarn build && mkdir -p ./dist && zip -r ./dist/password-manager-extension.zip ./build"
   },
   "eslintConfig": {
     "extends": [

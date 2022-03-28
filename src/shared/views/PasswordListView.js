@@ -27,13 +27,15 @@ export class PasswordListView extends PasswordListViewController {
             locationError: "",
             localMode: false,
             selectFolderLoaded: false,
-            timer: null
+            timer: null,
+            fetchTimer: null
         }
     }
 
     componentDidMount() {
         this.props.fetchAllPasswords();
         this.autoLogOut().then(r => {return r});
+        this.autoFetch().then(r => {return r})
     }
 
     componentDidUpdate(prevProps, prevState, _) {
@@ -82,6 +84,13 @@ export class PasswordListView extends PasswordListViewController {
         }
     }
 
+    autoFetch = async () => {
+        let fetchTimer = setTimeout(() => {
+            this.props.fetchAllPasswords()
+        },  10000);
+        this.setState({fetchTimer: fetchTimer})
+    }
+
     togglePasswordType = (type) => {
         if (this.state[type] === "password") {
             this.setState({[type]: "text"})
@@ -94,6 +103,9 @@ export class PasswordListView extends PasswordListViewController {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
             if (this.state.timer !== null) {
                 clearTimeout(this.state.timer)
+            }
+            if (this.state.fetchTimer !== null) {
+                clearTimeout(this.state.fetchTimer)
             }
             this.props.setPasswordItem(
                 {
