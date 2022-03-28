@@ -1,7 +1,7 @@
 {
   "name": "password-manager-browser-extension",
   "productName": "Simple Password Manager Extension",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "author": "Martin Haderka",
   "description": "Description",
