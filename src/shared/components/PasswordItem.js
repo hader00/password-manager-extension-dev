@@ -3,13 +3,16 @@ import PropTypes from 'prop-types';
 import appLogo from '../logo.svg';
 import ImageWithDefault from "./ImageWithDefault";
 import {Box, Button, Divider, Grid} from "@material-ui/core";
+import {PasswordItemViewController} from "../../ViewController";
+import {fillCredentials} from "../../contentScript";
 
 
-export class PasswordItem extends Component {
+export class PasswordItem extends PasswordItemViewController {
     constructor(props) {
         super(props);
         this.state = {
-            url: this.props.password.url
+            url: this.props.password.url,
+            decryptedPassword: ""
         }
     }
 
@@ -31,20 +34,36 @@ export class PasswordItem extends Component {
                             <p><b>{this.props.password.title}</b></p>
                             <p>{this.props.password.username}</p>
                         </Grid>
+                        {this.props.setCurrentPasswordForFill === undefined ?
                         <Grid item xs
                               style={{position: "absolute", right: "10px", marginTop: "-10px", paddingRight: "10px"}}>
-                            <Button style={{
-                                display: "block",
-                                width: "10px",
-                                height: "30px",
-                                backgroundColor: "#007fff",
-                                marginBottom: "2px"
-                            }} size="small" variant="contained" color="primary"
-                                    onClick={this.openPasswordEdit}>Edit</Button>
-                            <Button style={{display: "block", width: "10px", height: "30px", backgroundColor: "green"}}
+                                <>
+                                <Button style={{
+                                    display: "block",
+                                    width: "10px",
+                                    height: "30px",
+                                    backgroundColor: "#007fff",
+                                    marginBottom: "2px"
+                                }} size="small" variant="contained" color="primary"
+                                        onClick={this.openPasswordEdit}>Edit</Button>
+                                <Button
+                                    style={{display: "block", width: "10px", height: "30px", backgroundColor: "green"}}
                                     size="small" variant="contained" color="secondary"
                                     onClick={this.openPasswordView}>View</Button>
+                                </>
+
+
                         </Grid>
+                        :
+                            <Grid item xs style={{position: "absolute", right: "10px", paddingRight: "10px"}}>
+                         <Button fullWidth style={{backgroundColor: "green", width: "10px",
+                             height: "30px"}} color="primary"
+                                variant="contained" onClick={async (e) => {
+                            e.preventDefault();
+                            fillCredentials(this.props.password.url, this.props.password.username, this.state.decryptedPassword)
+                        }}>Fill</Button>
+                            </Grid>
+                            }
                     </Grid>
                 </Box>
                 <Divider variant="fullWidth"/>
@@ -73,6 +92,14 @@ export class PasswordItem extends Component {
 
     componentDidMount() {
         this.checkURL();
+        if (this.props.setCurrentPasswordForFill !== undefined) {
+            if (this.props.password.password !== "" && this.props.password.password !== undefined) {
+                this.decryptPassword(this.props.password.password).then(decryptedPassword => {
+                    this.setState({decryptedPassword: decryptedPassword})
+                    this.props.setCurrentPasswordForFill(decryptedPassword)
+                });
+            }
+        }
     }
 }
 

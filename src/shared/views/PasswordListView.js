@@ -27,6 +27,7 @@ export class PasswordListView extends PasswordListViewController {
             locationError: "",
             localMode: false,
             selectFolderLoaded: false,
+            timer: null
         }
     }
 
@@ -59,23 +60,25 @@ export class PasswordListView extends PasswordListViewController {
     }
 
     handlePasswordView = (activePasswordVal, openTypeVal, addingNewItemVal) => {
-        console.log(activePasswordVal, openTypeVal, addingNewItemVal);
         this.setState({activePasswordID: activePasswordVal});
         this.setState({inputReadOnly: openTypeVal});
         this.setState({addingNewItem: addingNewItemVal});
     }
 
     autoLogOut = async () => {
-        let timeout =  this.props.timeout * 60 * 1000;
-        if (timeout === null) {
+        let timeout;
+        if (this.props.timeout !== null) {
+            timeout = this.props.timeout * 60 * 1000;
+        } else {
             timeout = 5 * 60 * 1000; // 5 minutes
         }
-        if (timeout !== -1) {
+        if (timeout > 1) {
             let that = this;
-            setTimeout(() => {
+            let timer = setTimeout(() => {
+                that.ws.send(JSON.stringify({channel: "extension:logout"}));
                 that.props.changeParentsActiveView(ViewType.defaultLoginView)
-                console.log("logging out")
             }, timeout);
+            this.setState({timer: timer})
         }
     }
 
@@ -89,6 +92,9 @@ export class PasswordListView extends PasswordListViewController {
 
     render() {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
+            if (this.state.timer !== null) {
+                clearTimeout(this.state.timer)
+            }
             this.props.setPasswordItem(
                 {
                     password: this.props.passwords.length >= 1 ? this.props.passwords.filter(pass => pass.id === this.state.activePasswordID)[0] : [],
@@ -159,7 +165,6 @@ export class PasswordListView extends PasswordListViewController {
 
 
 PasswordListView.propTypes = {
-    componentName: PropTypes.string.isRequired,
     changeParentsActiveView: PropTypes.func.isRequired,
 }
 

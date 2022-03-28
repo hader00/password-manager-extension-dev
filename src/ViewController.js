@@ -32,7 +32,6 @@ class LocalLoginViewController extends Component {
                     that.handleViewChange(ViewType.passwordListView);
                 } else {
                     // todo warning
-                    console.log("Login unsuccessful");
                 }
             }
         }
@@ -73,7 +72,6 @@ class LocalRegistrationViewController extends Component {
                 if (result.localRegistrationSuccess === true) {
                     that.changeParentsActiveView(ViewType.passwordListView);
                 } else {
-                    console.log("Registration NOT successful");
                 }
             }
         }
@@ -174,16 +172,6 @@ class PasswordItemViewController extends Component {
             }
         });
     }
-    decryptPasswordSync = (encryptedPassword) => {
-        this.props.ws.send(JSON.stringify({channel: "password:decrypt", password: encryptedPassword}));
-        // receiver
-        this.props.ws.onmessage = function (evt) {
-            const result = JSON.parse(evt.data)
-            if (result.channel === "password:decryptResponse") {
-                this.setState({decryptedPassword: result.password});
-            }
-        }
-    }
 
     //
     popView = () => {
@@ -215,11 +203,8 @@ class PasswordItemViewController extends Component {
             const result = JSON.parse(evt.data)
             if (result.channel === "passwords:addResponse") {
                 if (result.addSuccess === true) {
-                    console.log(result)
                     that.popView();
                 } else {
-                    console.log("fail")
-                    console.log(result)
                 }
             }
         }
@@ -247,11 +232,9 @@ class PasswordItemViewController extends Component {
             const result = JSON.parse(evt.data)
             if (result.channel === "passwords:updateResponse") {
                 if (result.updateSuccess === true) {
-                    console.log(result)
                     that.popView();
                 } else {
-                    console.log("fail")
-                    console.log(result)
+
                 }
             }
         }
@@ -266,11 +249,8 @@ class PasswordItemViewController extends Component {
             const result = JSON.parse(evt.data)
             if (result.channel === "passwords:deleteResponse") {
                 if (result.deleteSuccess === true) {
-                    console.log(result)
                     that.popView();
                 } else {
-                    console.log("fail")
-                    console.log(result)
                 }
             }
         }

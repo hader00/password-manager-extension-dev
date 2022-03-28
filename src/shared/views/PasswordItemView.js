@@ -53,8 +53,6 @@ export class PasswordItemView extends PasswordItemViewController {
             passwordFiledFocused: false,
             inputReadOnly: this.props.inputReadOnly
         }
-        console.log(this.props.password)
-        console.log(this.props.inputReadOnly)
     }
 
 
@@ -299,12 +297,6 @@ export class PasswordItemView extends PasswordItemViewController {
         this.setState({url: url})
     }
 
-    openBrowser = async () => {
-        console.log("shellOpenExternal")
-        console.log(this.state.url)
-        await window.electron.shellOpenExternal(this.state.url);
-    }
-
     componentDidMount() {
         if (!this.props.addingNewItem) {
             if (this.state.url !== "" && this.state.url !== undefined) {
@@ -336,8 +328,6 @@ export class PasswordItemView extends PasswordItemViewController {
                 if (result.password.length > 0) {
                     that.setState({password: result.password})
                 } else {
-                    console.log("fail")
-                    console.log(result)
                 }
             }
         }

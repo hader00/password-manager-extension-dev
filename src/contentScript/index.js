@@ -20,11 +20,3 @@ export function fillCredentials(url, username, password) {
     chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="password"]' ).value = '${password}'`});
   });
 }
-
-export function inject() {
-  chrome.tabs.getSelected(null, function(tab) {
-    let tabUrl = tab.url;
-    chrome.tabs.executeScript(null,{code:"document.querySelector( 'input[name=\"username\"]' ).value = 'testUser'"});
-
-  });
-}
