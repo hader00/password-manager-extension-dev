@@ -1,12 +1,11 @@
 import React from 'react';
 import PasswordItem from "../components/PasswordItem";
-import PropTypes from "prop-types";
 import ViewType from "../other/ViewType";
 import {Add,} from "@material-ui/icons";
 import {AppBar, Box, Button, TextField, Toolbar} from "@material-ui/core";
 import {PasswordListViewController} from "../../ViewController";
 
-export class PasswordListView extends PasswordListViewController {
+export default class PasswordListView extends PasswordListViewController {
 
     constructor(props) {
         super(props);
@@ -34,8 +33,12 @@ export class PasswordListView extends PasswordListViewController {
 
     componentDidMount() {
         this.props.fetchAllPasswords();
-        this.autoLogOut().then(r => {return r});
-        this.autoFetch().then(r => {return r})
+        this.autoLogOut().then(r => {
+            return r
+        });
+        this.autoFetch().then(r => {
+            return r
+        })
     }
 
     componentDidUpdate(prevProps, prevState, _) {
@@ -51,7 +54,6 @@ export class PasswordListView extends PasswordListViewController {
     searchItems = () => {
         if (this.state.searchInput !== '') {
             const filteredData = this.props.passwords.filter((item) => {
-                // Todo exclude password from values
                 const {password, ...remaining} = item
                 return Object.values(remaining).join('').toLowerCase().includes(this.state.searchInput?.toLowerCase())
             })
@@ -77,6 +79,9 @@ export class PasswordListView extends PasswordListViewController {
         if (timeout > 1) {
             let that = this;
             let timer = setTimeout(() => {
+                if (that.ws === undefined) {
+                    that.props.changeParentsActiveView(ViewType.defaultLoginView)
+                }
                 that.ws.send(JSON.stringify({channel: "extension:logout"}));
                 that.props.changeParentsActiveView(ViewType.defaultLoginView)
             }, timeout);
@@ -87,7 +92,7 @@ export class PasswordListView extends PasswordListViewController {
     autoFetch = async () => {
         let fetchTimer = setTimeout(() => {
             this.props.fetchAllPasswords()
-        },  10000);
+        }, 10000);
         this.setState({fetchTimer: fetchTimer})
     }
 
@@ -101,12 +106,6 @@ export class PasswordListView extends PasswordListViewController {
 
     render() {
         if (this.state.activePasswordID > 0 || this.state.addingNewItem === true) {
-            if (this.state.timer !== null) {
-                clearTimeout(this.state.timer)
-            }
-            if (this.state.fetchTimer !== null) {
-                clearTimeout(this.state.fetchTimer)
-            }
             this.props.setPasswordItem(
                 {
                     password: this.props.passwords.length >= 1 ? this.props.passwords.filter(pass => pass.id === this.state.activePasswordID)[0] : [],
@@ -118,32 +117,43 @@ export class PasswordListView extends PasswordListViewController {
             return (<></>)
         } else {
             return (
-                    <div className="container">
-                        <AppBar variant="fullWidth">
-                            <Toolbar style={{justifyContent: "space-between"}}>
-                                <Button
-                                    style={{marginRight: "10px", backgroundColor: "#007fff"}}
-                                    color="primary" variant="contained"
-                                    onClick={() => {
-                                        this.setState({addingNewItem: true})
-                                    }}>{<Add/>}</Button>
-                                <TextField fullWidth
-                                           style={{backgroundColor: "white", borderRadius: "10px"}}
-                                           focused={true}
-                                           value={this.state.searchInput} variant="outlined" type="text" id="search"
-                                           size="small"
-                                           placeholder="Search" onChange={(e) => {
-                                    this.setState({passwordError: ""})
-                                    this.setState({searchInput: e.target.value})
-                                }
-                                }/>
-                            </Toolbar>
-                        </AppBar>
-                        <Box style={{paddingTop: "30px"}}>
-                            <p id="no-items"> {(this.props.passwords.size === 0) ? "No Passwords" : ""}</p>
-                            <div id="passwords">
-                                {(this.state.searchInput?.length >= 1 && this.props.filteredPasswords?.length >= 1) ? (
-                                    this.props.filteredPasswords?.map((password) => {
+                <div className="container">
+                    <AppBar variant="fullWidth">
+                        <Toolbar style={{justifyContent: "space-between"}}>
+                            <Button
+                                style={{marginRight: "10px", backgroundColor: "#007fff"}}
+                                color="primary" variant="contained"
+                                onClick={() => {
+                                    this.setState({addingNewItem: true})
+                                }}>{<Add/>}</Button>
+                            <TextField fullWidth
+                                       style={{backgroundColor: "white", borderRadius: "10px"}}
+                                       focused={true}
+                                       value={this.state.searchInput} variant="outlined" type="text" id="search"
+                                       size="small"
+                                       placeholder="Search" onChange={(e) => {
+                                this.setState({passwordError: ""})
+                                this.setState({searchInput: e.target.value})
+                            }
+                            }/>
+                        </Toolbar>
+                    </AppBar>
+                    <Box style={{paddingTop: "30px"}}>
+                        <p id="no-items"> {(this.props.passwords.size === 0) ? "No Passwords" : ""}</p>
+                        <div id="passwords">
+                            {(this.state.searchInput?.length >= 1 && this.props.filteredPasswords?.length >= 1) ? (
+                                this.props.filteredPasswords?.map((password) => {
+                                    return (
+                                        <PasswordItem
+                                            key={password.id}
+                                            password={password}
+                                            parentPasswordView={this.handlePasswordView}
+                                        />
+                                    )
+                                })
+                            ) : (
+                                this.props.passwords?.length >= 1 ? (
+                                    this.props.passwords?.map((password) => {
                                         return (
                                             <PasswordItem
                                                 key={password.id}
@@ -153,31 +163,13 @@ export class PasswordListView extends PasswordListViewController {
                                         )
                                     })
                                 ) : (
-                                    this.props.passwords?.length >= 1 ? (
-                                        this.props.passwords?.map((password) => {
-                                            return (
-                                                <PasswordItem
-                                                    key={password.id}
-                                                    password={password}
-                                                    parentPasswordView={this.handlePasswordView}
-                                                />
-                                            )
-                                        })
-                                    ) : (
-                                        <></>
-                                    )
-                                )}
-                            </div>
-                        </Box>
-                    </div>
+                                    <></>
+                                )
+                            )}
+                        </div>
+                    </Box>
+                </div>
             );
         }
     }
 }
-
-
-PasswordListView.propTypes = {
-    changeParentsActiveView: PropTypes.func.isRequired,
-}
-
-export default PasswordListView;

@@ -1,17 +1,14 @@
 import './shared/App.css';
 import ViewType from "./shared/other/ViewType";
-import DefaultLoginView from "./shared/views/DefaultLoginView";
 import SwitchComponents from "./shared/components/SwitchComponent";
-import LocalLoginView from "./shared/views/LocalLoginView";
-import LocalRegistrationView from "./shared/views/LocalRegistrationView";
-import RegistrationView from "./shared/views/RegistrationView";
 import PasswordsListView from "./shared/views/PasswordListView";
 import PasswordItemView from "./shared/views/PasswordItemView";
-import {fillCredentials, getActiveTabURL, getCurrentURL} from "./contentScript";
-import {Button} from "@material-ui/core";
+import {fillCredentials, getActiveTabURL} from "./contentScript";
+import {AppBar, Box, Button, Container, Toolbar, Typography} from "@material-ui/core";
 import {PasswordItemViewController} from "./ViewController";
 import PasswordItem from "./shared/components/PasswordItem";
 import React from "react";
+import URL_REGEX from "./shared/other/Utils";
 
 class App extends PasswordItemViewController {
     timeout = 250; // Initial timeout duration as a class variable
@@ -41,110 +38,104 @@ class App extends PasswordItemViewController {
     }
 
     render() {
-        if (this.state.activeView === null) {
+        if (this.state.activeView !== ViewType.passwordListView && this.state.activeView !== ViewType.passwordItem) {
             return (
                 <div className="App">
-                    <p>Please open client's application first.</p>
+                    <Box style={{paddingTop: "10px", paddingBottom: "10px"}}>
+                        <AppBar variant="fullWidth">
+                            <Toolbar style={{display: "flex", justifyContent: "center"}}>
+                                <Typography style={{fontWeight: "bold"}} variant="h5">Password Manager</Typography>
+                            </Toolbar>
+                        </AppBar>
+                        <p style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            textAlign: "center",
+                            minHeight: "100vh"
+                        }}>Please open client's application and login.</p>
+                    </Box>
                 </div>
             )
         } else {
             return (
-                <div className="App">
-                    <SwitchComponents active={this.state.activeView}>
-                        <DefaultLoginView componentName={ViewType.defaultLoginView}
-                                          changeParentsActiveView={this.changeActiveView}
-                                          ws={this.ws}/>
-                        <LocalLoginView componentName={ViewType.localLoginView}
-                                        changeParentsActiveView={this.changeActiveView}
-                                        ws={this.ws}/>
-                        <LocalRegistrationView componentName={ViewType.localRegistrationView}
-                                               changeParentsActiveView={this.changeActiveView}
-                                               ws={this.ws}/>
-                        <RegistrationView componentName={ViewType.registrationView}
-                                          changeParentsActiveView={this.changeActiveView}
-                                          ws={this.ws}/>
-                        <div componentName={ViewType.passwordListView}>
-                            {(this.state.passwords.some(password => {
-                                const passwordURL = password.url.match('^.*[\\.|/]([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\\.[a-zA-Z]{2,})')
-                                const currentURL = this.state.curUrl.match('^.*[\\.|/]([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\\.[a-zA-Z]{2,})')
-                                if (passwordURL !== null && currentURL !== null) {
-                                    if (passwordURL.length > 1 && currentURL.length > 1) {
-                                        return passwordURL[1] === currentURL[1]
-                                    } else {
-                                        return false
-                                    }
-                                } else {
-                                    return false
-                                }
-                            }) ?
-                                <div style={{paddingTop: "40px", marginBottom: "-40px"}}>
-                                    <b style={{paddingRight: "-10px"}}>Current website:</b>
-                                    {(this.state.passwords.filter(password => {
-                                        const passwordURL = password.url.match('^.*[\\.|/]([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\\.[a-zA-Z]{2,})')
-                                        const currentURL = this.state.curUrl.match('^.*[\\.|/]([a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\\.[a-zA-Z]{2,})')
-                                        if (passwordURL !== null && currentURL !== null) {
-                                            if (passwordURL.length > 1 && currentURL.length > 1) {
-                                                return passwordURL[1] === currentURL[1]
-                                            } else {
-                                                return false
-                                            }
-                                        } else {
-                                            return false
-                                        }
-                                    }).map(password => {
-                                        return (
-                                            <PasswordItem
-                                                key={password.id}
-                                                password={password}
-                                                parentPasswordView={this.handlePasswordView}
-                                                setCurrentPasswordForFill={this.setCurrentPasswordForFill}
-                                                ws={this.ws}
-                                            />)
-                                    })
-                                    )}
-                                    <b style={{paddingRight: "-10px"}}>All items:</b>
-                                </div>
-                                :
-                                <>
-                                </>
-                            )}
-                            <PasswordsListView
-                                               changeParentsActiveView={this.changeActiveView}
-                                               setPasswordItem={this.setPasswordItem}
-                                               passwords={this.state.passwords}
-                                               filteredPasswords={this.state.filteredPasswords}
-                                               setFilteredPasswords={this.setFilteredPasswords}
-                                               fetchAllPasswords={this.fetchAllPasswords}
-                                               timeout={this.state.timeout}
-                                               ws={this.ws}/>
+                <Container maxWidth="sm">
+                    <Box>
+                        <SwitchComponents active={this.state.activeView}>
+                            <div componentName={ViewType.passwordListView}>
+                                {(this.state.passwords.some(password => {
+                                        return this.filterPasswords(password);
+                                    }) ?
+                                        <div style={{paddingTop: "60px", marginBottom: "-40px"}}>
+                                            <b style={{paddingRight: "-10px"}}>Current website:</b>
+                                            {(this.state.passwords.filter(password => {
+                                                    return this.filterPasswords(password);
+                                                }).map(password => {
+                                                    return (
+                                                        <PasswordItem
+                                                            key={password.id}
+                                                            password={password}
+                                                            parentPasswordView={this.handlePasswordView}
+                                                            setCurrentPasswordForFill={this.setCurrentPasswordForFill}
+                                                            ws={this.ws}
+                                                        />)
+                                                })
+                                            )}
+                                            <b style={{paddingRight: "-10px"}}>All items:</b>
+                                        </div>
+                                        :
+                                        <>
+                                        </>
+                                )}
+                                <PasswordsListView
+                                    changeParentsActiveView={this.changeActiveView}
+                                    setPasswordItem={this.setPasswordItem}
+                                    passwords={this.state.passwords}
+                                    filteredPasswords={this.state.filteredPasswords}
+                                    setFilteredPasswords={this.setFilteredPasswords}
+                                    fetchAllPasswords={this.fetchAllPasswords}
+                                    timeout={this.state.timeout}
+                                    ws={this.ws}/>
 
-                        </div>
-                        <div
-                            componentName={ViewType.passwordItem}>
-                            <PasswordItemView
-                            changeParentsActiveView={this.changeActiveView}
-                            setPasswordForFill={this.setPasswordForFill}
-                            password={this.state.passwordItem.password}
-                            inputReadOnly={this.state.passwordItem.inputReadOnly}
-                            addingNewItem={this.state.passwordItem.addingNewItem}
-                                ws={this.ws}
-                            />
-                            {!this.state.passwordItem.addingNewItem ?
-                                <>
-                                <div></div>
-                                <Button fullWidth style={{backgroundColor: "green"}} color="primary"
-                                        variant="contained" onClick={async (e) => {
-                                    e.preventDefault();
-                                    fillCredentials(this.state.passwordItem.password.password.url, this.state.passwordItem.password.username, this.state.decryptedPassword)
-                                }}>Fill Credentials</Button></>
-                                :
-                                <></>
-                            }
-                        </div>
-                    </SwitchComponents>
-                </div>
+                            </div>
+                            <div
+                                componentName={ViewType.passwordItem}>
+                                <PasswordItemView
+                                    changeParentsActiveView={this.changeActiveView}
+                                    setPasswordForFill={this.setPasswordForFill}
+                                    password={this.state.passwordItem.password}
+                                    inputReadOnly={this.state.passwordItem.inputReadOnly}
+                                    addingNewItem={this.state.passwordItem.addingNewItem}
+                                    ws={this.ws}
+                                />
+                                {!this.state.passwordItem.addingNewItem ?
+                                    <>
+                                        <div></div>
+                                        <Button fullWidth style={{backgroundColor: "green"}} color="primary"
+                                                variant="contained" onClick={async (e) => {
+                                            e.preventDefault();
+                                            fillCredentials(this.state.passwordItem.password.password.url, this.state.passwordItem.password.username, this.state.decryptedPassword)
+                                        }}>Fill Credentials</Button></>
+                                    :
+                                    <></>
+                                }
+                            </div>
+                        </SwitchComponents>
+                    </Box>
+                </Container>
             );
         }
+    }
+
+    filterPasswords(password) {
+        const passwordURL = password.url?.match(URL_REGEX)
+        const currentURL = this.state.curUrl?.match(URL_REGEX)
+        if (passwordURL !== null && currentURL !== null) {
+            if (passwordURL?.length > 1 && currentURL?.length > 1) {
+                return passwordURL[1].toUpperCase() === currentURL[1].toUpperCase()
+            }
+        }
+        return false
     }
 
     componentDidMount() {
@@ -201,6 +192,7 @@ class App extends PasswordItemViewController {
                 err.message,
                 "Closing socket"
             );
+            this.setState({activeView: ViewType.defaultLoginView});
 
             ws.close();
         };
@@ -221,11 +213,7 @@ class App extends PasswordItemViewController {
         }
     }
     getActiveView = () => {
-        this.state.ws.send(JSON.stringify({channel:"defaultView:get"}));
-    }
-
-    onChangePassword = (newValue) => {
-        this.setState({password: newValue})
+        this.ws.send(JSON.stringify({channel: "defaultView:get"}));
     }
 
     fetchAllPasswords = () => {

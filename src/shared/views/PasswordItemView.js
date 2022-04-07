@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types';
 import {PasswordItemViewController} from "../../ViewController";
 import PasswordField from "../components/PasswordField";
 import PasswordGenerator from "../components/PasswordGenerator";
@@ -19,7 +18,7 @@ import {
     Typography
 } from "@material-ui/core";
 
-export class PasswordItemView extends PasswordItemViewController {
+export default class PasswordItemView extends PasswordItemViewController {
 
     static defaultProps = {
         password: {
@@ -51,7 +50,8 @@ export class PasswordItemView extends PasswordItemViewController {
             },
             showGenerator: false,
             passwordFiledFocused: false,
-            inputReadOnly: this.props.inputReadOnly
+            inputReadOnly: this.props.inputReadOnly,
+            addingNewItem: this.props.addingNewItem
         }
     }
 
@@ -86,7 +86,13 @@ export class PasswordItemView extends PasswordItemViewController {
                                     }
                                 }}
                             >
-                                {this.state.inputReadOnly ? <CreateIcon/> : <DeleteIcon/>}
+                                {(this.state.addingNewItem) ?
+                                    <></>
+                                    :
+                                    <>
+                                        {(this.state.inputReadOnly) ? <CreateIcon/> : <DeleteIcon/>}
+                                    </>
+                                }
                             </IconButton>
                         </Toolbar>
                     </AppBar>
@@ -118,6 +124,7 @@ export class PasswordItemView extends PasswordItemViewController {
                                        showingGenerator={this.state.showGenerator}
                                        placeholder={"Password"} name={"password"} id={"password"}
                                        inputReadOnly={this.state.inputReadOnly} inputRequired={true}
+                                       ws={this.props.ws}
                                        onChange={e => {
                                            this.onChange(e);
                                        }} showViewPassOptions={!this.props.addingNewItem}/>
@@ -134,6 +141,7 @@ export class PasswordItemView extends PasswordItemViewController {
                                                        setGeneratorState={this.onChangeGenerator}/>
                                     <Button fullWidth color="primary" className="submit-button" type="button"
                                             variant="contained"
+                                            disabled={!(this.state.generator.specialCharacters || this.state.generator.numbers || this.state.generator.lowerCase || this.state.generator.upperCase)}
                                             style={{display: "inline-block", margin: "0 auto"}}
                                             onClick={async (e) => {
                                                 e.preventDefault();
@@ -327,17 +335,8 @@ export class PasswordItemView extends PasswordItemViewController {
             if (result.channel === "password:generateResponse") {
                 if (result.password.length > 0) {
                     that.setState({password: result.password})
-                } else {
                 }
             }
         }
     }
 }
-
-PasswordItemView.propTypes = {
-    password: PropTypes.object.isRequired,
-    inputReadOnly: PropTypes.bool.isRequired,
-}
-
-
-export default PasswordItemView;

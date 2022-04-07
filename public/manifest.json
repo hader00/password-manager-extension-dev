@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "version": "0.0.1",
+  "version": "1.0.1",
   "short_name": "PM Extension",
   "name": "Simple Password Manager Extension",
   "description": "",
@@ -16,7 +16,7 @@
     "512": "./icons/512x512.png"
   },
   "browser_action": {
-    "default_title": "CRE",
+    "default_title": "PM Extension",
     "default_popup": "popup.html"
   },
   "background": {
@@ -30,6 +30,6 @@
     }
   ],
   "options_page": "options.html",
-  "permissions": ["storage", "tabs", "activeTab", "http://*/*", "https://*/*"],
+  "permissions": ["storage", "clipboardWrite", "tabs", "activeTab", "http://*/*", "https://*/*"],
   "content_security_policy": "script-src 'self' 'sha256-fdAfMKZtCTRPKMRznGwonJHC++vCCrQS7XFnVrzSXAE=';"
 }

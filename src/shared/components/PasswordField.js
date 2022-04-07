@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from "prop-types";
 import {Button, TextField} from "@material-ui/core";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
@@ -8,49 +7,47 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import {PasswordFieldController} from "../../ViewController";
 
 
-export class PasswordField extends PasswordFieldController {
+export default class PasswordField extends PasswordFieldController {
     constructor(props) {
         super(props);
         this.state = {
-            type: props.type,
+            type: this.props.type,
         }
     }
 
     render() {
-        const props = this.props
         return (
             <div style={{marginTop: "10px", display: "flex"}}>
                 <TextField
                     inputProps={{
-                        readOnly: Boolean(props.inputReadOnly),
-                        disabled: Boolean(props.inputReadOnly),
+                        readOnly: Boolean(this.props.inputReadOnly),
+                        disabled: Boolean(this.props.inputReadOnly),
                     }}
-                    value={props.value || ''}
+                    value={this.props.value || ''}
                     style={{display: "flex", width: "70vw"}}
                     type={this.state.type}
-                    label={props.placeholder}
-                    name={props.name} id={props.id} onChange={props.onChange}/>
+                    label={this.props.placeholder}
+                    name={this.props.name} id={this.props.id} onChange={this.props.onChange}/>
                 {(this.state.type === "password") ?
                     <>
-                        {props.value?.length > 0 ?
+                        {this.props.value?.length > 0 ?
                             <Button
                                 style={{paddingBottom: "15px", paddingTop: "15px"}}
                                 variant=""
                                 onClick={async () => {
-                                    // Todo decrypt password, ask electron, save to variable, nullify on view change or on hide
                                     this.setState({type: "text"});
                                 }}>
                                 <VisibilityIcon/></Button>
                             :
                             <></>
                         }
-                        {props.value?.length > 0 ?
+                        {this.props.value?.length > 0 ?
                             <Button
                                 style={{paddingBottom: "15px", paddingTop: "15px"}}
                                 variant=""
                                 onClick={async (e) => {
                                     e.preventDefault();
-                                    await this.copy(props.value);
+                                    await this.copy(this.props.value);
                                 }}>
                                 <FileCopyIcon/></Button>
                             :
@@ -61,10 +58,10 @@ export class PasswordField extends PasswordFieldController {
                             :
                             <Button
                                 style={{paddingBottom: "15px", paddingTop: "15px", boxShadow: "none"}}
-                                variant={props.showingGenerator === true ? "contained" : ""}
+                                variant={this.props.showingGenerator === true ? "contained" : ""}
                                 onClick={async (e) => {
                                     e.preventDefault();
-                                    props.togglePasswordGenerator();
+                                    this.props.togglePasswordGenerator();
                                 }}>
                                 <SettingsIcon/></Button>
                         }
@@ -75,7 +72,6 @@ export class PasswordField extends PasswordFieldController {
                             style={{paddingBottom: "15px", paddingTop: "15px"}}
                             variant=""
                             onClick={() => {
-                                // Todo nullify on view change or on hide
                                 this.setState({type: "password"});
                             }}>
                             <VisibilityOffIcon/></Button>
@@ -84,7 +80,7 @@ export class PasswordField extends PasswordFieldController {
                             variant=""
                             onClick={async (e) => {
                                 e.preventDefault();
-                                await this.copy(props.value);
+                                await this.copy(this.props.value);
                             }}>
                             <FileCopyIcon/></Button>
                         {(this.props.inputReadOnly === true) ?
@@ -95,7 +91,7 @@ export class PasswordField extends PasswordFieldController {
                                 variant=""
                                 onClick={async (e) => {
                                     e.preventDefault();
-                                    props.togglePasswordGenerator();
+                                    this.props.togglePasswordGenerator();
                                 }}>
                                 <SettingsIcon/></Button>
                         }
@@ -107,41 +103,35 @@ export class PasswordField extends PasswordFieldController {
 
 
     copy = async (text) => {
-        let timeout = this.getDefaultSecurity()
-        if (timeout === null) {
-            timeout = 10 * 1000; //10 seconds
-        }
-        await navigator.clipboard.writeText(text);
-        if (timeout !== -1) {
-            setTimeout(() => {
-                navigator.clipboard.writeText("");
-            }, timeout);
-        }
+        let that = this
+        this.getDefaultSecurity().then(async timeout => {
+            if (timeout === null) {
+                timeout = 10 * 1000; //10 seconds
+            }
+            await navigator.clipboard.writeText(text);
+            if (timeout !== -1) {
+                setTimeout(async () => {
+                    await navigator.clipboard.writeText("").catch(error => {
+                        that.clearClipboardOnFocus()
+                    });
+                }, timeout);
+            }
+        })
     }
 
+    clearClipboardOnFocus = () => {
+        window.addEventListener('focus', async function () {
+            await navigator.clipboard.writeText("");
+        },{once : true})
+    }
     async componentDidMount() {
-        const props = this.props
-        let inputField = document.getElementById(props.id)
+        let inputField = document.getElementById(this.props.id)
 
-        if (props.inputRequired) {
-            inputField.setAttribute("required", props.inputRequired)
+        if (this.props.inputRequired) {
+            inputField.setAttribute("required", this.props.inputRequired)
         }
-        if (props.inputReadOnly) {
-            inputField.setAttribute("readOnly", props.inputReadOnly)
+        if (this.props.inputReadOnly) {
+            inputField.setAttribute("readOnly", this.props.inputReadOnly)
         }
     }
 }
-
-PasswordField.propTypes = {
-    id: PropTypes.string.isRequired,
-    name: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    placeholder: PropTypes.string.isRequired,
-
-    showViewPassOptions: PropTypes.bool,
-    value: PropTypes.string,
-    passwordType: PropTypes.string,
-}
-
-export default PasswordField;

@@ -20,7 +20,7 @@ export class PasswordGenerator extends Component {
                     <FormControlLabel
                         control={
                             <Checkbox
-                                checked={this.props.generator.specialCharacters}
+                                checked={this.props.generator.numbers}
                                 onChange={this.changeCheckbox}
                                 name="numbers"
                                 color="primary"
@@ -31,7 +31,7 @@ export class PasswordGenerator extends Component {
                     <FormControlLabel
                         control={
                             <Checkbox
-                                checked={this.props.generator.specialCharacters}
+                                checked={this.props.generator.lowerCase}
                                 onChange={this.changeCheckbox}
                                 name="lowerCase"
                                 color="primary"
@@ -103,9 +103,5 @@ export class PasswordGenerator extends Component {
         this.props.setGeneratorState("length", Number(event.target.value))
     };
 }
-
-
-PasswordGenerator.propTypes = {}
-
 
 export default PasswordGenerator;
