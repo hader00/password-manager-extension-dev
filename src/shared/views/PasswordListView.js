@@ -152,7 +152,7 @@ export default class PasswordListView extends PasswordListViewController {
                                     )
                                 })
                             ) : (
-                                this.props.passwords?.length >= 1 ? (
+                                this.state.searchInput === "" && this.props.passwords?.length >= 1 ? (
                                     this.props.passwords?.map((password) => {
                                         return (
                                             <PasswordItem

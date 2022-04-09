@@ -124,14 +124,4 @@ export default class PasswordField extends PasswordFieldController {
             await navigator.clipboard.writeText("");
         },{once : true})
     }
-    async componentDidMount() {
-        let inputField = document.getElementById(this.props.id)
-
-        if (this.props.inputRequired) {
-            inputField.setAttribute("required", this.props.inputRequired)
-        }
-        if (this.props.inputReadOnly) {
-            inputField.setAttribute("readOnly", this.props.inputReadOnly)
-        }
-    }
 }
