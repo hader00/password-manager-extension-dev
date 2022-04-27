@@ -13,9 +13,7 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.12.4",
-    "@material-ui/icons": "^4.11.3",
-    "@material-ui/lab": "^4.0.0-alpha.61",
-    "validator": "^13.7.0"
+    "@material-ui/icons": "^4.11.3"
   },
   "scripts": {
     "build": "react-scripts build && cp -R ./icons ./build",
@@ -44,6 +42,6 @@
     "react": "^18.0.0",
     "react-browser-extension-scripts": "4.0.10",
     "react-dom": "^18.0.0",
-    "web-vitals": "^2.1.4"
+    "eslint-config-react-app": "^7.0.1"
   }
 }
