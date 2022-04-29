@@ -107,15 +107,7 @@ export class PasswordItem extends PasswordItemViewController {
     }
 
     componentDidMount() {
-        this.checkURL();
-        if (this.props.setCurrentPasswordForFill !== undefined) {
-            if (this.props.password.password !== "" && this.props.password.password !== undefined) {
-                this.decryptPassword(this.props.password.password).then(decryptedPassword => {
-                    this.setState({decryptedPassword: decryptedPassword})
-                    this.props.setCurrentPasswordForFill(decryptedPassword)
-                });
-            }
-        }
+        this.passwordItemDidMount()
     }
 }
 

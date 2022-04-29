@@ -18,7 +18,7 @@ import {
     Typography
 } from "@material-ui/core";
 
-export default class PasswordItemView extends PasswordItemViewController {
+export class PasswordItemView extends PasswordItemViewController {
 
     static defaultProps = {
         password: {
@@ -306,37 +306,8 @@ export default class PasswordItemView extends PasswordItemViewController {
     }
 
     componentDidMount() {
-        if (!this.props.addingNewItem) {
-            if (this.state.url !== "" && this.state.url !== undefined) {
-                this.checkURL();
-            }
-            if (this.state.password !== "" && this.state.password !== undefined) {
-                this.decryptPassword(this.state.password).then(password => {
-                    this.setState({password: password})
-                    this.props.setPasswordForFill(password)
-                });
-            }
-        }
-    }
-
-    generatePassword = (length, specialCharacters, numbers, lowerCase, upperCase) => {
-        this.props.ws.send(JSON.stringify({
-            channel: "password:generate",
-            length: length,
-            specialCharacters: specialCharacters,
-            numbers: numbers,
-            lowerCase: lowerCase,
-            upperCase: upperCase
-        }));
-        // receiver
-        let that = this
-        this.props.ws.onmessage = function (evt) {
-            const result = JSON.parse(evt.data)
-            if (result.channel === "password:generateResponse") {
-                if (result.password.length > 0) {
-                    that.setState({password: result.password})
-                }
-            }
-        }
+        this.passwordItemViewDidMount()
     }
 }
+
+export default PasswordItemView;

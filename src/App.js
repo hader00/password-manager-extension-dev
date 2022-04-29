@@ -5,12 +5,12 @@ import PasswordsListView from "./shared/views/PasswordListView";
 import PasswordItemView from "./shared/views/PasswordItemView";
 import {fillCredentials, getActiveTabURL} from "./contentScript";
 import {AppBar, Box, Button, Container, Toolbar, Typography} from "@material-ui/core";
-import {PasswordItemViewController} from "./ViewController";
+import {CustomComponent} from "./ViewController";
 import PasswordItem from "./shared/components/PasswordItem";
 import React from "react";
 import URL_REGEX from "./shared/other/Utils";
 
-class App extends PasswordItemViewController {
+class App extends CustomComponent {
     timeout = 250; // Initial timeout duration as a class variable
     ws = null;
 
@@ -75,7 +75,9 @@ class App extends PasswordItemViewController {
                                                         <PasswordItem
                                                             key={password.id}
                                                             password={password}
+                                                            decryptedPassword={this.state.decryptedPassword}
                                                             parentPasswordView={this.handlePasswordView}
+                                                            revertWSonMessage={this.revertWSonMessage}
                                                             setCurrentPasswordForFill={this.setCurrentPasswordForFill}
                                                             ws={this.ws}
                                                         />)
@@ -104,6 +106,7 @@ class App extends PasswordItemViewController {
                                     changeParentsActiveView={this.changeActiveView}
                                     setPasswordForFill={this.setPasswordForFill}
                                     password={this.state.passwordItem.password}
+                                    revertWSonMessage={this.revertWSonMessage}
                                     inputReadOnly={this.state.passwordItem.inputReadOnly}
                                     addingNewItem={this.state.passwordItem.addingNewItem}
                                     ws={this.ws}
@@ -114,7 +117,7 @@ class App extends PasswordItemViewController {
                                         <Button fullWidth style={{backgroundColor: "green"}} color="primary"
                                                 variant="contained" onClick={async (e) => {
                                             e.preventDefault();
-                                            fillCredentials(this.state.passwordItem.password.password.url, this.state.passwordItem.password.username, this.state.decryptedPassword)
+                                            await fillCredentials(this.state.passwordItem.password.password.url, this.state.passwordItem.password.username, this.state.decryptedPassword)
                                         }}>Fill Credentials</Button></>
                                     :
                                     <></>
@@ -139,7 +142,6 @@ class App extends PasswordItemViewController {
     }
 
     componentDidMount() {
-        // todo add local storage to switch default views
         let that = this
         getActiveTabURL().then(r => {
             that.setState({curUrl: r});
@@ -154,11 +156,15 @@ class App extends PasswordItemViewController {
         this.setState({passwordItem: newPasswordItem});
     }
 
-    setPasswordForFill = (password) => {
-        this.setState({decryptedPassword: password})
+    setPasswordForFill = async (password) => {
+        console.log("setting password", password)
+        await this.setState({decryptedPassword: password}, () => {
+            console.log(this.state.decryptedPassword)
+        })
     }
 
     setCurrentPasswordForFill = (password) => {
+        console.log("setCurrentPasswordForFill", password)
         this.setState({currentDecryptedPassword: password})
     }
 
@@ -181,8 +187,7 @@ class App extends PasswordItemViewController {
 
 
         ws.onmessage = function (evt) {
-            const response = JSON.parse(evt.data)
-            that.setStateFromResponse(response);
+            that.setStateFromResponse(evt);
         }
 
         // websocket onerror event listener
@@ -207,44 +212,33 @@ class App extends PasswordItemViewController {
         if (!ws || ws.readyState === WebSocket.CLOSED) this.connect(); //check if websocket instance is closed, if so call `connect` function.
     };
 
-    setStateFromResponse = (response) => {
-        if (response.channel === "defaultView:response") {
-            this.setState({activeView: response.defaultView, timeout: response.timeout});
-        }
-    }
+
     getActiveView = () => {
         this.ws.send(JSON.stringify({channel: "defaultView:get"}));
     }
 
     fetchAllPasswords = () => {
-        let that = this;
-        this.ws.send(JSON.stringify({channel: "extension:login"}));
         this.ws.send(JSON.stringify({channel: "passwords:fetch"}));
-        // receiver
-        this.ws.onmessage = function (evt) {
-            const result = JSON.parse(evt.data)
-            if (result.channel === "passwords:fetchResponse") {
-                that.setState({passwords: result.response});
-            }
-        }
     }
 
     getExtensionLoginState = () => {
-        let that = this;
         this.ws.send(JSON.stringify({channel: "login:get"}));
-        // receiver
-        this.ws.onmessage = function (evt) {
-            const result = JSON.parse(evt.data)
-            if (result.channel === "login:response") {
-                if (result.response === true) {
-                    that.setState({activeView: ViewType.passwordListView});
-                }
-            }
-        }
     }
 
     setFilteredPasswords = (value) => {
         this.setState({filteredPasswords: value});
+    }
+
+    revertWSonMessage = () => {
+        let that = this
+        this.ws.onmessage = function (evt) {
+            that.setStateFromResponse(evt);
+        }
+    }
+
+    //
+    popView = () => {
+        this.setState({activeView: ViewType.passwordListView});
     }
 }
 

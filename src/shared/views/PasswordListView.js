@@ -1,7 +1,7 @@
 import React from 'react';
 import PasswordItem from "../components/PasswordItem";
 import ViewType from "../other/ViewType";
-import {Add,} from "@material-ui/icons";
+import {Add} from "@material-ui/icons";
 import {AppBar, Box, Button, TextField, Toolbar} from "@material-ui/core";
 import {PasswordListViewController} from "../../ViewController";
 
@@ -32,13 +32,7 @@ export default class PasswordListView extends PasswordListViewController {
     }
 
     componentDidMount() {
-        this.props.fetchAllPasswords();
-        this.autoLogOut().then(r => {
-            return r
-        });
-        this.autoFetch().then(r => {
-            return r
-        })
+        this.passwordListViewDidMount();
     }
 
     componentDidUpdate(prevProps, prevState, _) {
@@ -67,26 +61,6 @@ export default class PasswordListView extends PasswordListViewController {
         this.setState({activePasswordID: activePasswordVal});
         this.setState({inputReadOnly: openTypeVal});
         this.setState({addingNewItem: addingNewItemVal});
-    }
-
-    autoLogOut = async () => {
-        let timeout;
-        if (this.props.timeout !== null) {
-            timeout = this.props.timeout * 60 * 1000;
-        } else {
-            timeout = 5 * 60 * 1000; // 5 minutes
-        }
-        if (timeout > 1) {
-            let that = this;
-            let timer = setTimeout(() => {
-                if (that.ws === undefined) {
-                    that.props.changeParentsActiveView(ViewType.defaultLoginView)
-                }
-                that.ws.send(JSON.stringify({channel: "extension:logout"}));
-                that.props.changeParentsActiveView(ViewType.defaultLoginView)
-            }, timeout);
-            this.setState({timer: timer})
-        }
     }
 
     autoFetch = async () => {

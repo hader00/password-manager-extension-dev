@@ -12,6 +12,8 @@ export default class PasswordField extends PasswordFieldController {
         super(props);
         this.state = {
             type: this.props.type,
+            timeout: null,
+            text: null
         }
     }
 
@@ -99,24 +101,6 @@ export default class PasswordField extends PasswordFieldController {
                 }
             </div>
         )
-    }
-
-
-    copy = async (text) => {
-        let that = this
-        this.getDefaultSecurity().then(async timeout => {
-            if (timeout === null) {
-                timeout = 10 * 1000; //10 seconds
-            }
-            await navigator.clipboard.writeText(text);
-            if (timeout !== -1) {
-                setTimeout(async () => {
-                    await navigator.clipboard.writeText("").catch(error => {
-                        that.clearClipboardOnFocus()
-                    });
-                }, timeout);
-            }
-        })
     }
 
     clearClipboardOnFocus = () => {
