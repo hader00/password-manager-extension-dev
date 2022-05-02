@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "version": "1.0.1",
+  "version": "1.0.4",
   "short_name": "PM Extension",
   "name": "Simple Password Manager Extension",
   "description": "Password Manager Extension for Chrome",
