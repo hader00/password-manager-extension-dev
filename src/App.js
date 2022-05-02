@@ -30,7 +30,6 @@ class App extends CustomComponent {
             filteredPasswords: [],
             passwordItem: {},
             decryptedPassword: "",
-            currentDecryptedPassword: "",
             currentPassword: "",
             defaultView: null,
             timeout: null,
@@ -78,7 +77,7 @@ class App extends CustomComponent {
                                                             decryptedPassword={this.state.decryptedPassword}
                                                             parentPasswordView={this.handlePasswordView}
                                                             revertWSonMessage={this.revertWSonMessage}
-                                                            setCurrentPasswordForFill={this.setCurrentPasswordForFill}
+                                                            setCurrentPasswordForFill={true}
                                                             ws={this.ws}
                                                         />)
                                                 })
@@ -96,7 +95,6 @@ class App extends CustomComponent {
                                     filteredPasswords={this.state.filteredPasswords}
                                     setFilteredPasswords={this.setFilteredPasswords}
                                     fetchAllPasswords={this.fetchAllPasswords}
-                                    timeout={this.state.timeout}
                                     ws={this.ws}/>
 
                             </div>
@@ -113,7 +111,7 @@ class App extends CustomComponent {
                                 />
                                 {!this.state.passwordItem.addingNewItem ?
                                     <>
-                                        <div></div>
+                                        <div className="mT20"></div>
                                         <Button fullWidth style={{backgroundColor: "green"}} color="primary"
                                                 variant="contained" onClick={async (e) => {
                                             e.preventDefault();
@@ -157,15 +155,7 @@ class App extends CustomComponent {
     }
 
     setPasswordForFill = async (password) => {
-        console.log("setting password", password)
-        await this.setState({decryptedPassword: password}, () => {
-            console.log(this.state.decryptedPassword)
-        })
-    }
-
-    setCurrentPasswordForFill = (password) => {
-        console.log("setCurrentPasswordForFill", password)
-        this.setState({currentDecryptedPassword: password})
+        await this.setState({decryptedPassword: password}, () => {})
     }
 
     connect = () => {
@@ -191,12 +181,7 @@ class App extends CustomComponent {
         }
 
         // websocket onerror event listener
-        ws.onerror = err => {
-            console.error(
-                "Socket encountered error: ",
-                err.message,
-                "Closing socket"
-            );
+        ws.onerror = () => {
             this.setState({activeView: ViewType.defaultLoginView});
 
             ws.close();

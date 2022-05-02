@@ -1,24 +1,42 @@
 /*global chrome*/
 
 export async function getActiveTabURL() {
-  return new Promise((resolve, reject) => {
-    chrome.tabs.getSelected(null, function(tab) {
-          resolve(tab.url)
-        });
+  return new Promise( (resolve, reject) => {
+      chrome.tabs.query({active: true, currentWindow: true }, tabs => {
+          let url = tabs[0].url;
+          resolve(url)
+      });
   });
 }
 
+export function openTab(url) {
+    chrome.tabs.create({'url': url})
+}
+
 export function fillCredentials(url, username, password) {
-  chrome.tabs.getSelected(null, function(tab) {
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="username"]' ).value = '${username}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="email"]' ).value = '${username}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[type="email"]' ).value = '${username}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="identifier"]' ).value = '${username}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[placeholder="Jméno"]' ).value = '${username}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="LDAPlogin"]' ).value = '${username}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[autocomplete="username"]' ).value = '${username}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="pass"]' ).value = '${password}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[name="password"]' ).value = '${password}'`});
-      chrome.tabs.executeScript(null, {code:`document.querySelector( 'input[type="password"]' ).value = '${password}'`});
-  });
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        let tab = tabs[0];
+        chrome.scripting.executeScript(
+            {
+                target: { tabId: tab.id, allFrames: true },
+                func: (uname, pass) => {
+                    const nameSelectors = ['name="email"', 'name="username"', 'type="email"', 'placeholder="Jméno"',
+                        'name="LDAPlogin"','autocomplete="username"']
+                    const passSelectors = ['name="pass"', 'name="password"', 'type="password"']
+                    nameSelectors.forEach(nameSelector => {
+                        let selected = document.querySelector( `input[${nameSelector}]` )
+                        if (selected !== null) {
+                            selected.value = uname
+                        }
+                    })
+                    passSelectors.forEach(passSelector => {
+                        let selected = document.querySelector( `input[${passSelector}]` )
+                        if (selected !== null) {
+                            selected.value = pass
+                        }
+                    })
+                },
+                args: [username, password]
+            });
+    });
 }
